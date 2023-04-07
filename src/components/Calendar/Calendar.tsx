@@ -8,6 +8,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay';
+import { Stack } from '@mui/material';
 
 dayjs.extend(isBetweenPlugin);
 
@@ -55,7 +56,6 @@ export function CustomCalendar({
 
 		// TODO: check function is function
 		if (onSelectionCb) {
-			console.log('Cb calendar', array);
 			onSelectionCb(array);
 		}
 	};
@@ -104,28 +104,23 @@ export function CustomCalendar({
 
 	return (
 		<LocalizationProvider dateAdapter={AdapterDayjs}>
-			<StaticDatePicker
-				displayStaticWrapperAs="desktop"
-				label="Week picker"
-				value={values}
-				disableFuture={true}
-				onYearChange={year => {
-					console.log({ year });
-				}}
-				onViewChange={view => {
-					console.log({ view });
-				}}
-				onMonthChange={month => {
-					console.log({ month });
-					setValues([]);
-					if (onMonthChange) onMonthChange(month);
-					if (onSelectionCb) onSelectionCb([]);
-				}}
-				onChange={() => {}}
-				renderDay={renderWeekPickerDay}
-				inputFormat="MMM DD"
-				renderInput={params => <TextField {...params} />}
-			/>
+			<Stack sx={{ width: '100%', minWidth: '90%' }}>
+				<StaticDatePicker
+					displayStaticWrapperAs="desktop"
+					label="Week picker"
+					value={values}
+					disableFuture={true}
+					onMonthChange={month => {
+						setValues([]);
+						if (onMonthChange) onMonthChange(month);
+						if (onSelectionCb) onSelectionCb([]);
+					}}
+					onChange={() => {}}
+					renderDay={renderWeekPickerDay}
+					inputFormat="MMM DD"
+					renderInput={params => <TextField {...params} />}
+				/>
+			</Stack>
 		</LocalizationProvider>
 	);
 }
