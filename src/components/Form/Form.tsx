@@ -170,7 +170,7 @@ export function Form(
 					/>
 				)}
 			/>
-			<Stack spacing={2} direction="row">
+			<Stack spacing={2} direction="row" marginTop={5}>
 				<ModalCloseButton>
 					<Button
 						variant="outlined"

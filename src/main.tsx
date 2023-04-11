@@ -1,16 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import ScopedCssBaseline from '@mui/material/ScopedCssBaseline';
+import CssBaseline from '@mui/material/CssBaseline';
 
 import ErrorPage from './pages/Error';
 import Root from './pages/Root';
 import Viewer from './pages/Viewer';
+import { CraContextProvider } from './contexts/craContext';
 
 const router = createBrowserRouter([
 	{
 		path: '/',
-		element: <Root />,
+		element: (
+			<CraContextProvider>
+				<Root />
+			</CraContextProvider>
+		),
 		errorElement: <ErrorPage />
 	},
 	{
@@ -21,8 +26,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 	<React.StrictMode>
-		<ScopedCssBaseline>
+		<CssBaseline>
 			<RouterProvider router={router} />
-		</ScopedCssBaseline>
+		</CssBaseline>
 	</React.StrictMode>
 );

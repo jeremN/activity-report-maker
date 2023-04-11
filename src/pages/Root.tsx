@@ -1,71 +1,31 @@
 import React from 'react';
 
-import {
-	Box,
-	Grid,
-	Typography,
-	Paper,
-	Button,
-	List,
-	ListItemButton,
-	ListItem
-} from '@mui/material';
+import { Box, Grid, Typography, Paper, Button, List, ListItemButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { PDFViewer } from '@react-pdf/renderer';
 
 import { CustomCalendar } from '../components/Calendar/Calendar';
-import {
-	BasicModal,
-	ModalCloseButton,
-	ModalOpenButton,
-	ModalProvider
-} from '../components/BasicModal/BasicModal';
-import { AddUserCompanyForm } from '../components/AddUserCompanyForm/AddUserCompanyForm';
-import { AddClientForm } from '../components/AddClientForm/AddClientForm';
-import { PDFDocument } from '../components/PDF/PDFDocument';
+import { BasicModal, ModalCloseButton, ModalProvider } from '../components/BasicModal/BasicModal';
 
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { getWeekdaysInMonth } from '../utils/dates';
-import { Link } from 'react-router-dom';
 import { Form } from '../components/Form/Form';
-
-type Company = {
-	name: string;
-	address: string;
-	zipCode: string;
-	city: string;
-	phone: string;
-	email: string;
-	website: string;
-	logo?: string;
-};
-type Client = Omit<Company, 'logo'>;
-type ClientsList = Client[];
-type UserCompanyList = Company[];
-type PDFList = {
-	id: string;
-	client: Client;
-	user: Company;
-	payload: {
-		month: number;
-		year: number;
-		selectedDays: Date[];
-		totalSelected: number;
-		totalWorkDays: number;
-	};
-}[];
+import { ListCard } from '../components/ListCard/ListCard';
+import { CraTable } from '../components/CraTable/CraTable';
+import { CraContext } from '../contexts/craContext';
 
 export default function Root() {
 	// TODO: useReducer + context
-	const [selectedClient, setSelectedClient] = React.useState<number | null>(null);
-	const [selectedCompany, setSelectedCompany] = React.useState<number | null>(null);
-	const [whichForm, setWhichForm] = React.useState<string>('idle');
-	const [daysSelected, setDaysSelected] = React.useState<Date[]>([]);
-	const [currentMonth, setCurrentMonth] = React.useState<Date>(new Date(new Date().setDate(0)));
+	const {
+		storedClient,
+		setStoredClient,
+		storedCompany,
+		setStoredCompany,
+		storedPDF,
+		setStoredPDF,
+		dispatch,
+		...state
+	} = React.useContext(CraContext);
 
-	const [storedClient, setStoredClient] = useLocalStorage<ClientsList>('cra-clients', []);
-	const [storedCompany, setStoredCompany] = useLocalStorage<UserCompanyList>('cra-companies', []);
-	const [storedPDF, setStoredPDF] = useLocalStorage<PDFList>('cra-pdf', []);
+	const [whichForm, setWhichForm] = React.useState<string>('idle');
 
 	const handleSelectCompanyOrClient = (
 		event: React.MouseEvent<HTMLDivElement, MouseEvent>,
@@ -73,24 +33,32 @@ export default function Root() {
 		type: string = 'company'
 	) => {
 		if (type === 'company') {
-			if (selectedCompany === index) setSelectedCompany(null);
-			setSelectedCompany(index);
+			if (state.user === index) dispatch({ type: 'SET_USER', user: null });
+			dispatch({ type: 'SET_USER', user: index });
 		} else {
-			if (selectedClient === index) setSelectedClient(null);
-			setSelectedClient(index);
+			if (state.client === index) dispatch({ type: 'SET_CLIENT', client: null });
+			dispatch({ type: 'SET_CLIENT', client: index });
 		}
 	};
 
 	return (
-		<>
+		<main
+			style={{
+				padding: '32px 32px',
+				flexBasis: 'calc(100% - 240px)',
+				minHeight: '100%',
+				overflow: 'hidden',
+				backgroundColor: '#f5f6fb'
+			}}>
 			<ModalProvider>
-				<Box sx={{ backgroundColor: '#f5f6fb', minHeight: '100vh' }}>
-					<Grid container spacing={2} columnSpacing={2} direction="column">
+				<Box sx={{ minHeight: '100vh' }}>
+					<Grid container spacing={1} columnSpacing={1}>
 						<Grid item xs={12}>
 							<Typography
 								variant="h1"
+								p={1}
 								sx={{
-									fontSize: 'clamp(1.5rem, 2.333vw + 1.5rem, 2.375rem)',
+									fontSize: 'clamp(1.5rem, 2.333vw + 1.5rem, 2.125rem)',
 									fontWeight: 700,
 									lineHeight: 'clamp(1.815rem, 1.008vw + 1.815rem, 2.193rem)'
 								}}>
@@ -99,90 +67,87 @@ export default function Root() {
 						</Grid>
 						<Grid item xs={12} container spacing={2}>
 							<Grid item xs={12} md={6} container>
-								<Grid item xs={12}>
-									<Paper sx={{ p: 2, margin: 'auto' }}>
-										<Grid item xs={12}>
-											<Typography variant="h2" sx={{ fontSize: '1.85rem', fontWeight: 700 }}>
-												Votre société
-											</Typography>
-											{storedCompany.length > 0 ? (
-												<List>
-													{storedCompany.map((company, index) => (
-														<ListItemButton
-															key={index}
-															selected={selectedCompany === index}
-															onClick={evt => handleSelectCompanyOrClient(evt, index, 'company')}>
-															{company.name}
-														</ListItemButton>
-													))}
-												</List>
-											) : (
-												<p>Vous n'avez pas encore enregistrer de société</p>
-											)}
-
-											<ModalOpenButton>
-												<Button
-													variant="contained"
-													type="button"
-													fullWidth
-													onClick={() => setWhichForm('new-company')}>
-													Ajouter ma société
-												</Button>
-											</ModalOpenButton>
-										</Grid>
-									</Paper>
-								</Grid>
-								<Grid item xs={12}>
-									<Paper sx={{ p: 2, margin: 'auto' }}>
-										<Grid item xs={12}>
-											<Typography variant="h2" sx={{ fontSize: '1.85rem', fontWeight: 700 }}>
-												Sélectionner un client
-											</Typography>
-											{storedClient.length > 0 ? (
-												<List>
-													{storedClient.map((company, index) => (
-														<ListItemButton
-															key={index}
-															selected={selectedClient === index}
-															onClick={evt => handleSelectCompanyOrClient(evt, index, 'client')}>
-															{company.name}
-														</ListItemButton>
-													))}
-												</List>
-											) : (
-												<p>Vous n'avez pas encore enregistrer de client</p>
-											)}
-
-											<ModalOpenButton>
-												<Button
-													variant="contained"
-													type="button"
-													fullWidth
-													onClick={() => setWhichForm('new-client')}>
-													Ajouter un client
-												</Button>
-											</ModalOpenButton>
-										</Grid>
-									</Paper>
-								</Grid>
+								<ListCard
+									title="Sélectionner une société"
+									withModalBtn={true}
+									modalBtnWording="Ajouter ma société"
+									onModalBtnClick={() => setWhichForm('new-company')}>
+									{storedCompany.length > 0 ? (
+										<List>
+											{storedCompany.map((company, index) => (
+												<ListItemButton
+													key={index}
+													selected={state.user === index}
+													onClick={evt => handleSelectCompanyOrClient(evt, index, 'company')}>
+													{company.name}
+												</ListItemButton>
+											))}
+										</List>
+									) : (
+										<p>Vous n'avez pas encore enregistrer de société</p>
+									)}
+								</ListCard>
+								<ListCard
+									title="Sélectionner un client"
+									withModalBtn={true}
+									modalBtnWording="Ajouter un client"
+									onModalBtnClick={() => setWhichForm('new-client')}>
+									{storedClient.length > 0 ? (
+										<List>
+											{storedClient.map((company, index) => (
+												<ListItemButton
+													key={index}
+													selected={state.client === index}
+													onClick={evt => handleSelectCompanyOrClient(evt, index, 'client')}>
+													{company.name}
+												</ListItemButton>
+											))}
+										</List>
+									) : (
+										<p>Vous n'avez pas encore enregistrer de client</p>
+									)}
+								</ListCard>
 							</Grid>
 
 							<Grid item xs={12} md={6}>
 								<Paper sx={{ p: 0, margin: 'auto' }}>
-									<Grid item xs={12} sx={{ backgroundColor: '#f2faf2', p: 1 }}>
-										<Typography paragraph={true} sx={{}}>
-											{daysSelected.length} jour(s) sur{' '}
-											{getWeekdaysInMonth(
-												new Date(currentMonth)?.getMonth(),
-												new Date().getFullYear()
-											)}{' '}
-											jours
+									<Grid
+										item
+										xs={12}
+										sx={{
+											p: 1,
+											background: 'linear-gradient(90deg, #0A7BC4 0%, #05A7D0 100%)',
+											borderRadius: '4px 4px 0 0 ',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center'
+										}}>
+										<Typography
+											paragraph={true}
+											p={1}
+											sx={{
+												textAlign: 'center',
+												fontSize: '0.875rem',
+												color: 'white',
+												margin: 0
+											}}>
+											<span style={{ fontSize: '1.125rem', fontWeight: 700, marginRight: '6px' }}>
+												{state.selectedDays.length}
+											</span>
+											<span>
+												sur{' '}
+												{getWeekdaysInMonth(
+													new Date(state.month)?.getMonth(),
+													new Date().getFullYear()
+												)}{' '}
+												jours
+											</span>
 										</Typography>
 									</Grid>
 									<Grid item xs={12}>
 										<CustomCalendar
-											onSelectionCb={arg => setDaysSelected(arg)}
-											onMonthChange={arg => setCurrentMonth(arg)}
+											onSelectionCb={arg => dispatch({ type: 'SET_DAYS', selectedDays: arg })}
+											onMonthChange={arg => dispatch({ type: 'SET_MONTH', month: arg })}
 										/>
 									</Grid>
 									<Grid item xs={12} padding={2}>
@@ -191,23 +156,21 @@ export default function Root() {
 											type="button"
 											fullWidth
 											onClick={() => {
-												// TODO: validate client and company are selected
-												// TODO: generate PDF and show link (or PDF directly ? both ??)
-												if (selectedClient === null || selectedCompany === null) return; // TODO: show error notif
+												if (state.client === null || state.user === null) return; // TODO: show error notif
 
 												const updatedPDFs = [
 													...storedPDF,
 													{
 														id: crypto.randomUUID(),
-														client: storedClient[selectedClient],
-														user: storedCompany[selectedCompany],
+														client: storedClient[state.client],
+														user: storedCompany[state.user],
 														payload: {
-															month: new Date(currentMonth)?.getMonth(),
-															year: new Date(currentMonth).getFullYear(),
-															selectedDays: daysSelected,
-															totalSelected: daysSelected.length,
+															month: new Date(state.month)?.getMonth(),
+															year: new Date(state.month).getFullYear(),
+															selectedDays: state.selectedDays,
+															totalSelected: state.selectedDays.length,
 															totalWorkDays: getWeekdaysInMonth(
-																new Date(currentMonth)?.getMonth(),
+																new Date(state.month)?.getMonth(),
 																new Date().getFullYear()
 															)
 														}
@@ -222,33 +185,10 @@ export default function Root() {
 							</Grid>
 						</Grid>
 					</Grid>
-					<Grid item xs={12} sx={{ height: '100%' }}>
-						<Paper sx={{ p: 2, margin: '12px auto' }}>
-							<Grid item xs={12}>
-								<Typography variant="h2" sx={{ fontSize: '1.85rem', fontWeight: 700 }}>
-									PDFs
-								</Typography>
-							</Grid>
-							{storedPDF.length > 0 ? (
-								<List>
-									{storedPDF.map((pdf, index) => (
-										<ListItem key={pdf?.id ?? index}>
-											<Link to={`/${pdf.id}`}>
-												{new Date(pdf?.payload?.year, pdf?.payload?.month).toLocaleDateString(
-													'fr-FR',
-													{
-														year: 'numeric',
-														month: 'long'
-													}
-												)}
-											</Link>
-										</ListItem>
-									))}
-								</List>
-							) : (
-								<p>Vous n'avez pas encore enregistrer de PDF</p>
-							)}
-						</Paper>
+					<Grid container marginTop={2}>
+						<ListCard title="PDFs" withModalBtn={false}>
+							<CraTable list={storedPDF} />
+						</ListCard>
 					</Grid>
 				</Box>
 				<BasicModal
@@ -284,6 +224,6 @@ export default function Root() {
 					/>
 				</BasicModal>
 			</ModalProvider>
-		</>
+		</main>
 	);
 }
