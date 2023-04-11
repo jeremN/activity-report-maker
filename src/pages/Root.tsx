@@ -185,9 +185,11 @@ export default function Root() {
 							</Grid>
 						</Grid>
 					</Grid>
-					<ListCard title="PDFs" withModalBtn={false}>
-						<CraTable list={storedPDF} />
-					</ListCard>
+					<Grid container marginTop={2}>
+						<ListCard title="PDFs" withModalBtn={false}>
+							<CraTable list={storedPDF} />
+						</ListCard>
+					</Grid>
 				</Box>
 				<BasicModal
 					title={
