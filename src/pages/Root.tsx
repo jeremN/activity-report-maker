@@ -33,11 +33,11 @@ export default function Root() {
 		type: string = 'company'
 	) => {
 		if (type === 'company') {
-			if (state.user === index) dispatch({ type: 'SET_USER', user: null });
-			dispatch({ type: 'SET_USER', user: index });
+			if (state.user === index) dispatch({ type: 'SET_USER', ...state, user: null });
+			dispatch({ type: 'SET_USER', ...state, user: index });
 		} else {
-			if (state.client === index) dispatch({ type: 'SET_CLIENT', client: null });
-			dispatch({ type: 'SET_CLIENT', client: index });
+			if (state.client === index) dispatch({ type: 'SET_CLIENT', ...state, client: null });
+			dispatch({ type: 'SET_CLIENT', ...state, client: index });
 		}
 	};
 
@@ -146,8 +146,10 @@ export default function Root() {
 									</Grid>
 									<Grid item xs={12}>
 										<CustomCalendar
-											onSelectionCb={arg => dispatch({ type: 'SET_DAYS', selectedDays: arg })}
-											onMonthChange={arg => dispatch({ type: 'SET_MONTH', month: arg })}
+											onSelectionCb={arg =>
+												dispatch({ type: 'SET_DAYS', ...state, selectedDays: arg })
+											}
+											onMonthChange={arg => dispatch({ type: 'SET_MONTH', ...state, month: arg })}
 										/>
 									</Grid>
 									<Grid item xs={12} padding={2}>

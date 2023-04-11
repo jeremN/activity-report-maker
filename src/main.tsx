@@ -5,8 +5,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 import ErrorPage from './pages/Error';
 import Root from './pages/Root';
-import Viewer from './pages/Viewer';
 import { CraContextProvider } from './contexts/craContext';
+
+const Viewer = React.lazy(() => import('./pages/Viewer'));
 
 const router = createBrowserRouter([
 	{

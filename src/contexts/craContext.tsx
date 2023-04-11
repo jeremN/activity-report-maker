@@ -39,7 +39,7 @@ type CraContext = {
 	setStoredCompany: (value: UserCompanyList | ((val: UserCompanyList) => UserCompanyList)) => void;
 	storedPDF: PDF[];
 	setStoredPDF: (value: PDFList | ((val: PDFList) => PDFList)) => void;
-	dispatch: React.Dispatch<{ type: string } & Partial<CraState>>;
+	dispatch: React.Dispatch<{ type: string } & CraState>;
 };
 type CraState = {
 	client: number | null;

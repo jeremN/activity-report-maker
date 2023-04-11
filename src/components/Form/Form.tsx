@@ -72,7 +72,7 @@ export function Form(
 							label="Logo"
 							variant="outlined"
 							type="file"
-							accept="image/png, image/jpeg"
+							/*accept="image/png, image/jpeg"*/
 							fullWidth
 							sx={{ margin: '8px 0' }}
 							{...field}
