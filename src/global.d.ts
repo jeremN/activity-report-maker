@@ -1,5 +1,5 @@
-declare global {
-	export type Company = {
+export declare global {
+	type Company = {
 		name: string;
 		address: string;
 		zipCode: string;
@@ -9,10 +9,10 @@ declare global {
 		website: string;
 		logo?: string;
 	};
-	export type Client = Omit<Company, 'logo'>;
-	export type ClientsList = Client[];
-	export type UserCompanyList = Company[];
-	export type PDFList = {
+	type Client = Omit<Company, 'logo'>;
+	type ClientsList = Client[];
+	type UserCompanyList = Company[];
+	type PDF = {
 		id: string;
 		client: Client;
 		user: Company;
@@ -23,5 +23,6 @@ declare global {
 			totalSelected: number;
 			totalWorkDays: number;
 		};
-	}[];
+	};
+	type PDFList = PDF[];
 }

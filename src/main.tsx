@@ -4,10 +4,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import ErrorPage from './pages/Error';
+import Viewer from './pages/Viewer';
 import Root from './pages/Root';
 import { CraContextProvider } from './contexts/craContext';
-
-const Viewer = React.lazy(() => import('./pages/Viewer'));
 
 const router = createBrowserRouter([
 	{
@@ -21,7 +20,8 @@ const router = createBrowserRouter([
 	},
 	{
 		path: '/:id',
-		element: <Viewer />
+		element: <Viewer />,
+		errorElement: <ErrorPage />
 	}
 ]);
 

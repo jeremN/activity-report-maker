@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, ReactNode } from 'react';
 
-import { Modal, Box, Typography, Grid, ModalProps, Button } from '@mui/material';
+import { Modal, Box, Typography, Grid, ModalProps, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 type ModalContextType = {
@@ -94,9 +94,9 @@ function BasicModal({
 					</Typography>
 					{closeBtn || (
 						<ModalCloseButton>
-							<Button variant="outlined" type="button" aria-label="Fermer">
+							<IconButton type="button" aria-label="Fermer">
 								<CloseIcon />
-							</Button>
+							</IconButton>
 						</ModalCloseButton>
 					)}
 				</Grid>

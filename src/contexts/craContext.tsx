@@ -2,32 +2,6 @@ import * as React from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { constants } from '../constants';
 
-type Company = {
-	name: string;
-	address: string;
-	zipCode: string;
-	city: string;
-	phone: string;
-	email: string;
-	website: string;
-	logo?: string;
-};
-type Client = Omit<Company, 'logo'>;
-type ClientsList = Client[];
-type UserCompanyList = Company[];
-type PDF = {
-	id: string;
-	client: Client;
-	user: Company;
-	payload: {
-		month: number;
-		year: number;
-		selectedDays: Date[];
-		totalSelected: number;
-		totalWorkDays: number;
-	};
-};
-type PDFList = PDF[];
 type CraContext = {
 	client: number | null;
 	user: number | null;

@@ -4,18 +4,8 @@ import { Button, Stack, TextField } from '@mui/material';
 
 import { ModalCloseButton, useModalToggle } from '../BasicModal/BasicModal';
 
-type FormValues = {
-	name: string;
-	address: string;
-	phone: string;
-	zipCode: string;
-	city: string;
-	email: string;
-	website: string;
-	logo?: string;
-};
-
-const defaultValues: FormValues = {
+type FormValues = Company;
+const initialValues: Company = {
 	name: '',
 	address: '',
 	phone: '',
@@ -30,10 +20,17 @@ export function Form(
 		withLogo: boolean;
 		onCancelClick?: () => void | undefined;
 		onSubmitClick?: (payload: FormValues) => void | undefined;
+		values?: FormValues;
 	}
 ) {
-	const { control, handleSubmit, reset } = useForm<FormValues>({
-		defaultValues,
+	console.log('form', props?.values);
+	const {
+		control,
+		handleSubmit,
+		reset,
+		formState: { errors }
+	} = useForm<FormValues>({
+		defaultValues: props?.values || initialValues,
 		...(props?.withLogo && { image: '' })
 	});
 	const { setIsOpen } = useModalToggle();
@@ -50,6 +47,8 @@ export function Form(
 			<Controller
 				name="name"
 				control={control}
+				defaultValue=""
+				rules={{ required: 'Champs obligatoire' }}
 				render={({ field }) => (
 					<TextField
 						id="name"
@@ -57,6 +56,8 @@ export function Form(
 						variant="outlined"
 						fullWidth
 						sx={{ margin: '8px 0' }}
+						error={!!errors.name}
+						helperText={errors.name?.message}
 						{...field}
 					/>
 				)}
@@ -65,7 +66,7 @@ export function Form(
 				<Controller
 					name="logo"
 					control={control}
-					rules={{ required: true }}
+					rules={{ required: 'Champs obligatoire' }}
 					render={({ field }) => (
 						<TextField
 							id="logo"
@@ -75,6 +76,8 @@ export function Form(
 							/*accept="image/png, image/jpeg"*/
 							fullWidth
 							sx={{ margin: '8px 0' }}
+							error={!!errors.logo}
+							helperText={errors.logo?.message}
 							{...field}
 						/>
 					)}
@@ -83,7 +86,7 @@ export function Form(
 			<Controller
 				control={control}
 				name="address"
-				rules={{ required: true }}
+				rules={{ required: 'Champs obligatoire' }}
 				render={({ field }) => (
 					<TextField
 						id="address"
@@ -91,6 +94,8 @@ export function Form(
 						variant="outlined"
 						fullWidth
 						sx={{ margin: '8px 0' }}
+						error={!!errors.address}
+						helperText={errors.address?.message}
 						{...field}
 					/>
 				)}
@@ -98,7 +103,13 @@ export function Form(
 			<Controller
 				control={control}
 				name="zipCode"
-				rules={{ required: true }}
+				rules={{
+					required: 'Champs obligatoire',
+					pattern: {
+						value: /^(?:0[1-9]|[1-8]\d|9[0-8])\d{3}$/,
+						message: 'Format du code postal incorrect (ex: 75015)'
+					}
+				}}
 				render={({ field }) => (
 					<TextField
 						id="zipcode"
@@ -106,6 +117,8 @@ export function Form(
 						variant="outlined"
 						fullWidth
 						sx={{ margin: '8px 0' }}
+						error={!!errors.zipCode}
+						helperText={errors.zipCode?.message}
 						{...field}
 					/>
 				)}
@@ -113,7 +126,7 @@ export function Form(
 			<Controller
 				control={control}
 				name="city"
-				rules={{ required: true }}
+				rules={{ required: 'Champs obligatoire' }}
 				render={({ field }) => (
 					<TextField
 						id="client-city"
@@ -121,6 +134,8 @@ export function Form(
 						variant="outlined"
 						fullWidth
 						sx={{ margin: '8px 0' }}
+						error={!!errors.city}
+						helperText={errors.city?.message}
 						{...field}
 					/>
 				)}
@@ -128,7 +143,7 @@ export function Form(
 			<Controller
 				control={control}
 				name="phone"
-				rules={{ required: false, maxLength: 12 }}
+				rules={{ required: false, maxLength: { value: 15, message: '15 caractères maximum' } }}
 				render={({ field }) => (
 					<TextField
 						id="phone"
@@ -136,6 +151,8 @@ export function Form(
 						variant="outlined"
 						fullWidth
 						sx={{ margin: '8px 0' }}
+						error={!!errors.phone}
+						helperText={errors.phone?.message}
 						{...field}
 					/>
 				)}
@@ -143,7 +160,14 @@ export function Form(
 			<Controller
 				control={control}
 				name="email"
-				rules={{ required: false, maxLength: 12 }}
+				rules={{
+					required: false,
+					pattern: {
+						value:
+							/(?:[a-z0-9+!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i,
+						message: 'Adresse email incorrecte (ex: dupont@email.fr)'
+					}
+				}}
 				render={({ field }) => (
 					<TextField
 						id="email"
@@ -151,6 +175,8 @@ export function Form(
 						variant="outlined"
 						fullWidth
 						sx={{ margin: '8px 0' }}
+						error={!!errors.email}
+						helperText={errors.email?.message}
 						{...field}
 					/>
 				)}
@@ -158,7 +184,7 @@ export function Form(
 			<Controller
 				control={control}
 				name="website"
-				rules={{ required: false, maxLength: 12 }}
+				rules={{ required: false }}
 				render={({ field }) => (
 					<TextField
 						id="website"
@@ -178,7 +204,7 @@ export function Form(
 						fullWidth
 						onClick={() => {
 							props?.onCancelClick?.();
-							reset({ ...defaultValues });
+							reset({ ...initialValues });
 						}}>
 						Annuler
 					</Button>

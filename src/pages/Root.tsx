@@ -1,19 +1,36 @@
 import React from 'react';
 
-import { Box, Grid, Typography, Paper, Button, List, ListItemButton } from '@mui/material';
+import {
+	Box,
+	Grid,
+	Typography,
+	Paper,
+	Button,
+	List,
+	ListItemButton,
+	IconButton,
+	ListItem
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 import { CustomCalendar } from '../components/Calendar/Calendar';
-import { BasicModal, ModalCloseButton, ModalProvider } from '../components/BasicModal/BasicModal';
+import {
+	BasicModal,
+	ModalCloseButton,
+	ModalOpenButton,
+	ModalProvider
+} from '../components/BasicModal/BasicModal';
 
 import { getWeekdaysInMonth } from '../utils/dates';
 import { Form } from '../components/Form/Form';
 import { ListCard } from '../components/ListCard/ListCard';
 import { CraTable } from '../components/CraTable/CraTable';
 import { CraContext } from '../contexts/craContext';
+import { filterStoredList, updateStoredList } from '../utils/mapsAndFilters';
 
 export default function Root() {
-	// TODO: useReducer + context
 	const {
 		storedClient,
 		setStoredClient,
@@ -25,10 +42,13 @@ export default function Root() {
 		...state
 	} = React.useContext(CraContext);
 
-	const [whichForm, setWhichForm] = React.useState<string>('idle');
+	const [whichForm, setWhichForm] = React.useState<{ form: string; type: string }>({
+		form: 'none',
+		type: 'idle'
+	});
 
-	const handleSelectCompanyOrClient = (
-		event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+	const handleSelect = (
+		event: React.MouseEvent<HTMLElement, MouseEvent>,
 		index: number,
 		type: string = 'company'
 	) => {
@@ -39,6 +59,97 @@ export default function Root() {
 			if (state.client === index) dispatch({ type: 'SET_CLIENT', ...state, client: null });
 			dispatch({ type: 'SET_CLIENT', ...state, client: index });
 		}
+	};
+
+	const handleDelete = (
+		event: React.MouseEvent<HTMLElement, MouseEvent>,
+		index: number,
+		name: string,
+		type: string = 'company'
+	) => {
+		if (type === 'company') {
+			if (state.user === index) dispatch({ type: 'SET_USER', ...state, user: null });
+			const updatedCompanies = filterStoredList(storedCompany, (item, i) => {
+				const el = item as Company;
+				return i !== index && el.name.toLowerCase() !== name.toLowerCase();
+			});
+
+			setStoredCompany([...(updatedCompanies as UserCompanyList)]);
+		} else {
+			if (state.client === index) dispatch({ type: 'SET_CLIENT', ...state, client: null });
+			const updatedClients = filterStoredList(storedClient, (item, i) => {
+				const el = item as Client;
+				return i !== index && el.name.toLowerCase() !== name.toLowerCase();
+			});
+
+			setStoredClient([...(updatedClients as ClientsList)]);
+		}
+	};
+
+	const handeModify = (
+		event: React.MouseEvent<HTMLElement, MouseEvent>,
+		index: number,
+		type: string = 'company'
+	) => {
+		handleSelect(event, index, type);
+		setWhichForm({ form: 'modify', type });
+	};
+
+	const handleDeletePdf = (id: string) => {
+		const updatedPdfs = filterStoredList(storedPDF, (item, i) => {
+			const el = item as PDF;
+			return el.id !== id;
+		});
+
+		setStoredPDF([...(updatedPdfs as PDFList)]);
+	};
+
+	const handleSubmitNewForm = (payload: Company | Client) => {
+		if (whichForm.type === 'company') {
+			setStoredCompany([...storedCompany, { ...payload }]);
+		} else {
+			setStoredClient([...storedClient, { ...payload }]);
+		}
+	};
+
+	const handleSubmitModifyForm = (payload: Company | Client) => {
+		if (whichForm.type === 'company') {
+			const updatedCompany = updateStoredList(storedCompany, (item: unknown, i: number) => {
+				if (i === state.user) {
+					const updateCompany = { ...(item as Company), ...payload };
+					return updateCompany;
+				}
+				return item;
+			});
+			setStoredCompany([...(updatedCompany as UserCompanyList)]);
+			dispatch({ type: 'SET_USER', ...state, user: null });
+		} else if (whichForm.type === 'client') {
+			const updatedClient = updateStoredList(storedClient, (item: unknown, i: number) => {
+				if (i === state.client) {
+					const updateClient = { ...(item as Client), ...payload };
+					return updateClient;
+				}
+				return item;
+			});
+			setStoredClient([...(updatedClient as ClientsList)]);
+			dispatch({ type: 'SET_CLIENT', ...state, client: null });
+		}
+	};
+
+	const setFormValues = React.useCallback(() => {
+		if (whichForm.form !== 'modify') return undefined;
+
+		return whichForm.type === 'company' && state?.user
+			? storedCompany[state?.user]
+			: whichForm.type === 'client' && state?.client
+			? storedClient[state?.client]
+			: undefined;
+	}, [whichForm]);
+
+	const setFormTitle = () => {
+		return `${whichForm.form === 'new' ? 'Créer ' : 'Modifier '}${
+			whichForm.type === 'company' ? 'une compagnie' : 'un client'
+		}`;
 	};
 
 	return (
@@ -71,16 +182,37 @@ export default function Root() {
 									title="Sélectionner une société"
 									withModalBtn={true}
 									modalBtnWording="Ajouter ma société"
-									onModalBtnClick={() => setWhichForm('new-company')}>
+									onModalBtnClick={() => setWhichForm({ form: 'new', type: 'company' })}>
 									{storedCompany.length > 0 ? (
 										<List>
 											{storedCompany.map((company, index) => (
-												<ListItemButton
+												<ListItem
 													key={index}
-													selected={state.user === index}
-													onClick={evt => handleSelectCompanyOrClient(evt, index, 'company')}>
-													{company.name}
-												</ListItemButton>
+													secondaryAction={
+														<>
+															<ModalOpenButton>
+																<IconButton
+																	edge="start"
+																	aria-label="Modifier"
+																	onClick={evt => handeModify(evt, index, 'company')}>
+																	<EditIcon />
+																</IconButton>
+															</ModalOpenButton>
+															<IconButton
+																edge="end"
+																aria-label="Supprimer"
+																onClick={evt => handleDelete(evt, index, company.name, 'company')}>
+																<DeleteIcon />
+															</IconButton>
+														</>
+													}>
+													<ListItemButton
+														key={index}
+														selected={state.user === index}
+														onClick={evt => handleSelect(evt, index, 'company')}>
+														{company.name}
+													</ListItemButton>
+												</ListItem>
 											))}
 										</List>
 									) : (
@@ -91,16 +223,36 @@ export default function Root() {
 									title="Sélectionner un client"
 									withModalBtn={true}
 									modalBtnWording="Ajouter un client"
-									onModalBtnClick={() => setWhichForm('new-client')}>
+									onModalBtnClick={() => setWhichForm({ form: 'new', type: 'client' })}>
 									{storedClient.length > 0 ? (
 										<List>
-											{storedClient.map((company, index) => (
-												<ListItemButton
+											{storedClient.map((client, index) => (
+												<ListItem
 													key={index}
-													selected={state.client === index}
-													onClick={evt => handleSelectCompanyOrClient(evt, index, 'client')}>
-													{company.name}
-												</ListItemButton>
+													secondaryAction={
+														<>
+															<ModalOpenButton>
+																<IconButton
+																	edge="start"
+																	aria-label="Modifier"
+																	onClick={evt => handeModify(evt, index, 'client')}>
+																	<EditIcon />
+																</IconButton>
+															</ModalOpenButton>
+															<IconButton
+																edge="end"
+																aria-label="Supprimer"
+																onClick={evt => handleDelete(evt, index, client.name, 'client')}>
+																<DeleteIcon />
+															</IconButton>
+														</>
+													}>
+													<ListItemButton
+														selected={state.client === index}
+														onClick={evt => handleSelect(evt, index, 'client')}>
+														{client.name}
+													</ListItemButton>
+												</ListItem>
 											))}
 										</List>
 									) : (
@@ -189,39 +341,35 @@ export default function Root() {
 					</Grid>
 					<Grid container marginTop={2}>
 						<ListCard title="PDFs" withModalBtn={false}>
-							<CraTable list={storedPDF} />
+							<CraTable list={storedPDF} onDeleteCb={handleDeletePdf} />
 						</ListCard>
 					</Grid>
 				</Box>
 				<BasicModal
-					title={
-						whichForm === 'new-company'
-							? 'Ajouter une société'
-							: whichForm === 'new-client'
-							? ' Ajouter un client'
-							: ''
-					}
+					title={setFormTitle()}
 					closeBtn={
 						<ModalCloseButton>
 							<Button
 								variant="outlined"
 								type="button"
 								aria-label="Fermer"
-								onClick={() => setWhichForm('idle')}>
+								onClick={() => setWhichForm({ form: 'none', type: 'idle' })}>
 								<CloseIcon />
 							</Button>
 						</ModalCloseButton>
 					}>
 					<Form
+						values={setFormValues()}
 						withLogo={false}
-						onCancelClick={() => setWhichForm('idle')}
+						onCancelClick={() => setWhichForm({ form: 'none', type: 'idle' })}
 						onSubmitClick={payload => {
-							if (whichForm === 'new-company') {
-								setStoredCompany([...storedCompany, { ...payload }]);
-							} else {
-								setStoredClient([...storedClient, { ...payload }]);
+							if (whichForm.form === 'new') {
+								handleSubmitNewForm(payload);
+							} else if (whichForm.form === 'modify') {
+								handleSubmitModifyForm(payload);
 							}
-							setWhichForm('idle');
+
+							setWhichForm({ form: 'none', type: 'idle' });
 						}}
 					/>
 				</BasicModal>
