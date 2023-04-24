@@ -9,6 +9,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay';
 import { Stack } from '@mui/material';
+import { isFunction } from '../../utils';
 
 dayjs.extend(isBetweenPlugin);
 
@@ -37,9 +38,9 @@ export function CustomCalendar({
 	onMonthChange
 }: React.PropsWithChildren<JSX.IntrinsicAttributes> & {
 	onMonthChange?: (arg: Date) => void;
-	onSelectionCb?: (arg: Date[]) => void;
+	onSelectionCb?: (arg: DayObject[]) => void;
 }) {
-	const [values, setValues] = React.useState<Date[]>([]);
+	const [values, setValues] = React.useState<DayObject[]>([]);
 
 	const handleSelection = (newValue: Date) => {
 		const array = [...values];
@@ -47,28 +48,34 @@ export function CustomCalendar({
 		const index = findIndexDate(array, date);
 
 		if (index >= 0) {
-			array.splice(index, 1);
+			const selectionValue = getSelectionValue(array, index);
+
+			if (selectionValue !== 0.5) {
+				array[index].selection = 0.5;
+			} else {
+				array.splice(index, 1);
+			}
 		} else {
-			array.push(dayjs(date).toDate());
+			array.push({ date: dayjs(date).toDate(), selection: 1 });
 		}
-		console.info(array);
 		setValues(array);
 
-		// TODO: check function is function
-		if (onSelectionCb) {
+		if (onSelectionCb && isFunction(onSelectionCb)) {
 			onSelectionCb(array);
 		}
 	};
 
-	const findDate = (dates: Date[], date: Date) => {
+	const findDate = (dates: DayObject[], date: Date) => {
 		const dateTime = date.getTime();
-		return dates.find(item => item.getTime() === dateTime);
+		return dates.find(item => item.date.getTime() === dateTime);
 	};
 
-	const findIndexDate = (dates: Date[], date: Date) => {
+	const findIndexDate = (dates: DayObject[], date: Date) => {
 		const dateTime = date.getTime();
-		return dates.findIndex(item => item.getTime() === dateTime);
+		return dates.findIndex(item => item?.date.getTime() === dateTime);
 	};
+
+	const getSelectionValue = (dates: DayObject[], index: number) => dates[index].selection;
 
 	const renderWeekPickerDay = (
 		date: Date,
@@ -99,7 +106,7 @@ export function CustomCalendar({
 	const defaultMonth = dayjs(new Date()) as unknown as Date;
 
 	React.useEffect(() => {
-		if (onMonthChange) onMonthChange(defaultMonth);
+		if (onMonthChange && isFunction(onMonthChange)) onMonthChange(defaultMonth);
 	}, []);
 
 	return (

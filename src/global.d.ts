@@ -19,10 +19,11 @@ export declare global {
 		payload: {
 			month: number;
 			year: number;
-			selectedDays: Date[];
+			selectedDays: DayObject[];
 			totalSelected: number;
 			totalWorkDays: number;
 		};
 	};
 	type PDFList = PDF[];
+	type DayObject = { date: Date; selection: number };
 }

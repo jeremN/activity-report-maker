@@ -32,6 +32,7 @@ import { ListCard } from '../components/ListCard/ListCard';
 import { CraTable } from '../components/CraTable/CraTable';
 import { CraContext } from '../contexts/craContext';
 import { filterStoredList, updateStoredList } from '../utils/mapsAndFilters';
+import { WidthFull } from '@mui/icons-material';
 
 export default function Root() {
 	const {
@@ -49,6 +50,9 @@ export default function Root() {
 		form: 'none',
 		type: 'idle'
 	});
+
+	const calcSelectedDays = () =>
+		state.selectedDays.reduce((accum, val) => accum + Number(val.selection), 0);
 
 	const [toast, setToast] = React.useState<{
 		open: boolean;
@@ -173,7 +177,7 @@ export default function Root() {
 					month: new Date(state.month)?.getMonth(),
 					year: new Date(state.month).getFullYear(),
 					selectedDays: state.selectedDays,
-					totalSelected: state.selectedDays.length,
+					totalSelected: calcSelectedDays(),
 					totalWorkDays: getWeekdaysInMonth(
 						new Date(state.month)?.getMonth(),
 						new Date().getFullYear()
@@ -334,7 +338,7 @@ export default function Root() {
 												margin: 0
 											}}>
 											<span style={{ fontSize: '1.125rem', fontWeight: 700, marginRight: '6px' }}>
-												{state.selectedDays.length}
+												{calcSelectedDays()}
 											</span>
 											<span>
 												sur{' '}
@@ -358,6 +362,11 @@ export default function Root() {
 										<Button variant="contained" type="button" fullWidth onClick={handleCreateCra}>
 											Valider ma sélection
 										</Button>
+										<Grid item xs={12} textAlign={'center'} marginTop={1}>
+											<Typography variant="caption" gutterBottom>
+												1 clic pour une journée entière, double-clic pour une demi-journée
+											</Typography>
+										</Grid>
 									</Grid>
 								</Paper>
 							</Grid>

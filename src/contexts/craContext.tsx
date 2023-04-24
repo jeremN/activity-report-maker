@@ -6,7 +6,7 @@ type CraContext = {
 	client: number | null;
 	user: number | null;
 	month: Date;
-	selectedDays: Date[];
+	selectedDays: DayObject[];
 	storedClient: ClientsList;
 	setStoredClient: (value: ClientsList | ((val: ClientsList) => ClientsList)) => void;
 	storedCompany: UserCompanyList;
@@ -19,21 +19,21 @@ type CraState = {
 	client: number | null;
 	user: number | null;
 	month: Date;
-	selectedDays: Date[];
+	selectedDays: DayObject[];
 };
 
 const initialtReducerState: CraState = {
 	client: null,
 	user: null,
 	month: new Date(new Date().setDate(0)),
-	selectedDays: [] as Date[]
+	selectedDays: [] as DayObject[]
 };
 
 const defaultCraContext: CraContext = {
 	client: null,
 	user: null,
 	month: new Date(new Date().setDate(0)),
-	selectedDays: [] as Date[],
+	selectedDays: [] as DayObject[],
 	storedClient: [] as ClientsList,
 	setStoredClient: (value: any) => void 0,
 	storedCompany: [],

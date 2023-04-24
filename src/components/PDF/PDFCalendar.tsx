@@ -37,9 +37,16 @@ export function PDFCalendar({
 }: {
 	year: number;
 	month: number;
-	selectedDays: Date[];
+	selectedDays: DayObject[];
 }) {
 	const date = new Date(year, month);
+
+	const findDaySelection = (date: Date) => {
+		const dayFound = selectedDays.find(
+			d => new Date(d.date).getTime() === new Date(date).getTime()
+		);
+		return dayFound ? dayFound.selection : 0;
+	};
 
 	let slots: JSX.Element[] = [];
 
@@ -64,9 +71,7 @@ export function PDFCalendar({
 					...([6, 5].includes(getDay(date) % 7) && styles.weekendBlock)
 				}}>
 				<Text>{date.getDate()}</Text>
-				<Text>
-					{!!selectedDays.find(d => new Date(d).getTime() === new Date(date).getTime()) ? 1 : 0}
-				</Text>
+				<Text>{findDaySelection(date)}</Text>
 			</View>
 		);
 
