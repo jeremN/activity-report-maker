@@ -9,7 +9,10 @@ import {
 	List,
 	ListItemButton,
 	IconButton,
-	ListItem
+	ListItem,
+	Snackbar,
+	Alert,
+	type AlertProps
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -45,6 +48,16 @@ export default function Root() {
 	const [whichForm, setWhichForm] = React.useState<{ form: string; type: string }>({
 		form: 'none',
 		type: 'idle'
+	});
+
+	const [toast, setToast] = React.useState<{
+		open: boolean;
+		severity: AlertProps['severity'];
+		message: string;
+	}>({
+		open: false,
+		severity: 'info',
+		message: ''
 	});
 
 	const handleSelect = (
@@ -134,6 +147,43 @@ export default function Root() {
 			setStoredClient([...(updatedClient as ClientsList)]);
 			dispatch({ type: 'SET_CLIENT', ...state, client: null });
 		}
+	};
+
+	const handleToastClose = () => {
+		setToast({ ...toast, open: false });
+	};
+
+	const handleCreateCra = () => {
+		if (state.client === null || state.user === null) {
+			setToast({
+				open: true,
+				message: 'Vous devez sélectionner un client et une société pour pouvoir créer un document.',
+				severity: 'error'
+			});
+			return;
+		}
+
+		const updatedPDFs = [
+			...storedPDF,
+			{
+				id: crypto.randomUUID(),
+				client: storedClient[state.client],
+				user: storedCompany[state.user],
+				payload: {
+					month: new Date(state.month)?.getMonth(),
+					year: new Date(state.month).getFullYear(),
+					selectedDays: state.selectedDays,
+					totalSelected: state.selectedDays.length,
+					totalWorkDays: getWeekdaysInMonth(
+						new Date(state.month)?.getMonth(),
+						new Date().getFullYear()
+					)
+				}
+			}
+		];
+		setStoredPDF(updatedPDFs);
+		setToast({ open: true, message: 'PDF créer', severity: 'success' });
+		dispatch({ type: 'SET_EMPTY', ...state });
 	};
 
 	const setFormValues = React.useCallback(() => {
@@ -305,33 +355,7 @@ export default function Root() {
 										/>
 									</Grid>
 									<Grid item xs={12} padding={2}>
-										<Button
-											variant="contained"
-											type="button"
-											fullWidth
-											onClick={() => {
-												if (state.client === null || state.user === null) return; // TODO: show error notif
-
-												const updatedPDFs = [
-													...storedPDF,
-													{
-														id: crypto.randomUUID(),
-														client: storedClient[state.client],
-														user: storedCompany[state.user],
-														payload: {
-															month: new Date(state.month)?.getMonth(),
-															year: new Date(state.month).getFullYear(),
-															selectedDays: state.selectedDays,
-															totalSelected: state.selectedDays.length,
-															totalWorkDays: getWeekdaysInMonth(
-																new Date(state.month)?.getMonth(),
-																new Date().getFullYear()
-															)
-														}
-													}
-												];
-												setStoredPDF(updatedPDFs);
-											}}>
+										<Button variant="contained" type="button" fullWidth onClick={handleCreateCra}>
 											Valider ma sélection
 										</Button>
 									</Grid>
@@ -345,6 +369,11 @@ export default function Root() {
 						</ListCard>
 					</Grid>
 				</Box>
+				<Snackbar open={toast.open} autoHideDuration={7000} onClose={handleToastClose}>
+					<Alert onClose={handleToastClose} severity={toast.severity}>
+						{toast.message}
+					</Alert>
+				</Snackbar>
 				<BasicModal
 					title={setFormTitle()}
 					closeBtn={

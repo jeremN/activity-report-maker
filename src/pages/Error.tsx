@@ -1,4 +1,5 @@
-import { useRouteError } from 'react-router-dom';
+import { Button } from '@mui/material';
+import { useRouteError, Link as RouterLink } from 'react-router-dom';
 
 export default function ErrorPage() {
 	const error = useRouteError();
@@ -7,10 +8,10 @@ export default function ErrorPage() {
 	return (
 		<div id="error-page">
 			<h1>Oops!</h1>
-			<p>Sorry, an unexpected error has occurred.</p>
-			<p>
-				<i>{'Oops error'}</i>
-			</p>
+			<p>Une erreur inconnue s'est produite, veuillez revenir en arrière ou recharger la page.</p>
+			<Button variant="contained" component={RouterLink} to={'/'}>
+				Retourner à l'accueil
+			</Button>
 		</div>
 	);
 }

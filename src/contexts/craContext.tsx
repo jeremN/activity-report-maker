@@ -59,6 +59,9 @@ function CraReducer(state: CraState, action: { type: string } & CraState) {
 		case 'SET_DAYS': {
 			return { ...state, selectedDays: action.selectedDays };
 		}
+		case 'SET_EMPTY': {
+			return { ...initialtReducerState };
+		}
 		default: {
 			throw new Error(`Unhandled action type: ${action.type}`);
 		}

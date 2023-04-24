@@ -4,7 +4,10 @@ import { Button, Stack, TextField } from '@mui/material';
 
 import { ModalCloseButton, useModalToggle } from '../BasicModal/BasicModal';
 
+// TODO: later, implement image field
+
 type FormValues = Company;
+
 const initialValues: Company = {
 	name: '',
 	address: '',
@@ -23,7 +26,6 @@ export function Form(
 		values?: FormValues;
 	}
 ) {
-	console.log('form', props?.values);
 	const {
 		control,
 		handleSubmit,

@@ -51,7 +51,7 @@ export function CustomCalendar({
 		} else {
 			array.push(dayjs(date).toDate());
 		}
-
+		console.info(array);
 		setValues(array);
 
 		// TODO: check function is function
