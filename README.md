@@ -38,9 +38,10 @@ npm run deploy
 
 ## TODOs & Ideas
 
-- Half days in calendar
 - Edit saved CRAs
 - Better UI...
-- Fetch bank holidays (french) on new year ?
 - Add note ? (for on-call working days for example)
 - Better options (on-off switch for week-end, bank holidays etc...)
+- Auto-complete when looking for client (french only, through SIREN, address ... ?)
+- PDF templates selection ?
+- monetize ?
