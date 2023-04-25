@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { constants } from '../constants';
+import { getBankHolidays, bankHolidaysUrl } from '../config/requests';
 
 type CraContext = {
 	client: number | null;
@@ -13,6 +14,8 @@ type CraContext = {
 	setStoredCompany: (value: UserCompanyList | ((val: UserCompanyList) => UserCompanyList)) => void;
 	storedPDF: PDF[];
 	setStoredPDF: (value: PDFList | ((val: PDFList) => PDFList)) => void;
+	storedBankHolidays: BankHolidays;
+	setStoredBankHolidays: (value: BankHolidays | ((val: BankHolidays) => BankHolidays)) => void;
 	dispatch: React.Dispatch<{ type: string } & CraState>;
 };
 type CraState = {
@@ -40,6 +43,8 @@ const defaultCraContext: CraContext = {
 	setStoredCompany: (value: any) => void 0,
 	storedPDF: [],
 	setStoredPDF: (value: any) => void 0,
+	storedBankHolidays: { year: null, dates: [] },
+	setStoredBankHolidays: (value: any) => void 0,
 	dispatch: (value: any) => void 0
 };
 
@@ -80,6 +85,21 @@ function CraContextProvider(props: React.PropsWithChildren<JSX.IntrinsicAttribut
 		[]
 	);
 	const [storedPDF, setStoredPDF] = useLocalStorage<PDFList>(constants.STORAGE_PDF_KEY, []);
+	const [storedBankHolidays, setStoredBankHolidays] = useLocalStorage<BankHolidays>(
+		constants.STORAGE_HOLIDAYS_KEY,
+		{ year: null, dates: [] }
+	);
+
+	React.useEffect(() => {
+		if (storedBankHolidays.year === null || storedBankHolidays.year !== new Date().getFullYear()) {
+			getBankHolidays(bankHolidaysUrl(new Date().getFullYear(), 'metropole')).then(res => {
+				setStoredBankHolidays({
+					year: new Date().getFullYear(),
+					dates: Object.keys(res)
+				});
+			});
+		}
+	}, []);
 
 	// ? useMemo ?
 	const values = {
@@ -89,6 +109,8 @@ function CraContextProvider(props: React.PropsWithChildren<JSX.IntrinsicAttribut
 		setStoredCompany,
 		storedPDF,
 		setStoredPDF,
+		storedBankHolidays,
+		setStoredBankHolidays,
 		dispatch,
 		...state
 	};

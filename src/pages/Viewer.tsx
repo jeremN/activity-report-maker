@@ -75,7 +75,9 @@ export default function Viewer() {
 												}}>
 												<PDFDocument {...cra} />
 											</PDFViewer>
-										) : <p>Aucun document ne correspond à cette référence</p>}
+										) : (
+											<p>Aucun document ne correspond à cette référence</p>
+										)}
 									</Paper>
 								</Grid>
 							</Grid>

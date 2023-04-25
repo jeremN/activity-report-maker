@@ -1,4 +1,5 @@
 import React from 'react';
+import dayjs from 'dayjs';
 
 import {
 	Box,
@@ -26,13 +27,13 @@ import {
 	ModalProvider
 } from '../components/BasicModal/BasicModal';
 
-import { getWeekdaysInMonth } from '../utils/dates';
+import { getBankHolidaysInMonth, getWeekdaysInMonth } from '../utils/dates';
 import { Form } from '../components/Form/Form';
 import { ListCard } from '../components/ListCard/ListCard';
 import { CraTable } from '../components/CraTable/CraTable';
 import { CraContext } from '../contexts/craContext';
 import { filterStoredList, updateStoredList } from '../utils/mapsAndFilters';
-import { WidthFull } from '@mui/icons-material';
+import { getBankHolidays, bankHolidaysUrl } from '../config/requests';
 
 export default function Root() {
 	const {
@@ -42,6 +43,8 @@ export default function Root() {
 		setStoredCompany,
 		storedPDF,
 		setStoredPDF,
+		storedBankHolidays,
+		setStoredBankHolidays,
 		dispatch,
 		...state
 	} = React.useContext(CraContext);
@@ -345,17 +348,34 @@ export default function Root() {
 												{getWeekdaysInMonth(
 													new Date(state.month)?.getMonth(),
 													new Date().getFullYear()
-												)}{' '}
+												) -
+													getBankHolidaysInMonth(
+														new Date(state.month)?.getMonth(),
+														storedBankHolidays?.dates
+													)}{' '}
 												jours
 											</span>
 										</Typography>
 									</Grid>
 									<Grid item xs={12}>
 										<CustomCalendar
+											disabledDates={storedBankHolidays.dates}
 											onSelectionCb={arg =>
 												dispatch({ type: 'SET_DAYS', ...state, selectedDays: arg })
 											}
-											onMonthChange={arg => dispatch({ type: 'SET_MONTH', ...state, month: arg })}
+											onMonthChange={arg => {
+												if (dayjs(arg).year() !== storedBankHolidays.year) {
+													getBankHolidays(bankHolidaysUrl(dayjs(arg).year(), 'metropole')).then(
+														res => {
+															setStoredBankHolidays({
+																year: dayjs(arg).year(),
+																dates: Object.keys(res)
+															});
+														}
+													);
+												}
+												dispatch({ type: 'SET_MONTH', ...state, month: arg });
+											}}
 										/>
 									</Grid>
 									<Grid item xs={12} padding={2}>

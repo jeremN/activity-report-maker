@@ -14,6 +14,10 @@ function getWeekdaysInMonth(month: number, year: number) {
 	return weekdays;
 }
 
+function getBankHolidaysInMonth(month: number, dates: string[]) {
+	return dates.filter(day => new Date(day).getMonth() === month).length;
+}
+
 function getDay(date: Date) {
 	// get day number from 0 (monday) to 6 (sunday)
 	let day = date.getDay();
@@ -21,4 +25,4 @@ function getDay(date: Date) {
 	return day - 1;
 }
 
-export { daysInMonth, getWeekdaysInMonth, isWeekday, getDay };
+export { daysInMonth, getWeekdaysInMonth, getBankHolidaysInMonth, isWeekday, getDay };

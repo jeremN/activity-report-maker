@@ -9,6 +9,10 @@ export declare global {
 		website: string;
 		logo?: string;
 	};
+	type BankHolidays = {
+		year: number | null;
+		dates: string[];
+	};
 	type Client = Omit<Company, 'logo'>;
 	type ClientsList = Client[];
 	type UserCompanyList = Company[];
