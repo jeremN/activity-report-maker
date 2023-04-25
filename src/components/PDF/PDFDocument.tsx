@@ -56,7 +56,7 @@ export function PDFDocument(
 		payload: {
 			month: number;
 			year: number;
-			selectedDays: Date[];
+			selectedDays: DayObject[];
 			totalSelected: number;
 			totalWorkDays: number;
 		};
